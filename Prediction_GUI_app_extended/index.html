@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+  <title>MAL Score Prediction</title>
+  <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+  <script src="renderer.js"></script>
+  <script src="assets/jquery-3.3.1.min.js"></script>
+	<script src="assets/jquery-ui-1.12.1/jquery-ui.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.1.2/papaparse.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+  integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+  crossorigin="anonymous"></script>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" rel="stylesheet">
+	<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script>if (window.module) module = window.module;</script>
+  <link href="style.css" rel="stylesheet">
+	<script>
+	$('document').ready(function(){
+		$.getJSON("inputs.json", function(json) {
+			$('#username').val(json['username']);
+			$('#rounds').val(json['rounds']);
+		});
+	});
+	</script>
+	<script>
+	$( function() {
+		$("#tabs").tabs();
+		$("#tabsresparam").tabs();
+		$("#tabsfscores").tabs();
+		$("#tabsgraph").tabs();
+		$("#tabsgraph_general").tabs();
+		$("#tabsgraph_computed").tabs();
+		$("#tabsgraph_stats").tabs();
+		$("#tabsgraph_type").tabs();
+		$("#tabsgraph_source").tabs();
+	} );
+	</script>
+	<script>
+	$(document).ready(function() {
+		$('#resparam_button').click(function(){
+			$.getJSON("inputs.json", function(json) {
+				$("div#tabsresparam").tabs();
+				var i;
+				for (i=0; i<(json['rounds']); i++){
+					$("div#tabsresparam ul").append(
+							"<li><a href='#tabsresparam" + i + "'>#" + i + "</a></li>"
+					);
+					$("div#tabsresparam").append(
+							"<div id='tabsresparam" + i + "'></div>"
+					);
+
+
+
+					$('#tabsresparam'+i).append(
+					$('<button type="button" id="resparam_data_button" onclick="fetch_child_data('+i+')">Load Results/Parameters'+i+'</button>')
+					);
+					//$('#tabsresparam'+i).append('<br>');
+
+					$('#tabsresparam'+i).append(
+					$('<button type="button" id="erase_params" onclick="erase_params('+i+')">Erase This Parameter'+i+'</button>')
+					);
+
+					$('#tabsresparam'+i).append('<br>');
+
+					$('#tabsresparam'+i).append(
+					$('<button type="button" id= "top-4-'+i+'"><a href="#bottom-4-'+i+'">Go to Bottom</a></button>')
+					);
+
+					$('#tabsresparam'+i).append($('<div id="params'+i+'"></div>'));
+					$('#tabsresparam'+i).append($('<div id="result'+i+'"></div>'));
+					$('#tabsresparam'+i).append(
+					$('<button type="button" id= "bottom-4-'+i+'"><a href="#tabs">Go to Top</a></button>')
+					);
+
+					$("div#tabsresparam").tabs("refresh");
+				}
+			});
+			$('#temp').remove();
+			$('#tabsresparam-100').remove();
+		});
+
+	});
+	</script>
+	<script>
+	$(document).ready(function() {
+		$('#fscores_button').click(function(){
+			$.getJSON("inputs.json", function(json) {
+				$("div#tabsfscores").tabs();
+
+				var i;
+				for (i=0; i<(json['rounds']); i++){
+					$("div#tabsfscores ul").append(
+							"<li><a href='#tabsfscores" + i + "'>#" + i + "</a></li>"
+					);
+					$("div#tabsfscores").append(
+							"<div id='tabsfscores" + i + "'></div>"
+					);
+
+					$('#tabsfscores'+i).append(
+					$('<button type="button" id="fscores_data_button" onclick="fetch_fscores_data('+i+')">Load fscores'+i+'</button>')
+					);
+					$('#tabsfscores'+i).append('<br>');
+
+					$('#tabsfscores'+i).append(
+					$('<button type="button" id= "top-5-'+i+'"><a href="#bottom-5-'+i+'">Go to Bottom</a></button>')
+					);
+
+					$('#tabsfscores'+i).append($('<div id="fscores'+i+'_graph" style="width:700px;height:350px;"></div>'));
+
+					$('#tabsfscores'+i).append($('<div id="fscores'+i+'"></div>'));
+					$('#tabsfscores'+i).append(
+					$('<button type="button" id= "bottom-5-'+i+'"><a href="#tabs">Go to Top</a></button>')
+					);
+
+					$("div#tabsfscores").tabs("refresh");
+				}
+			});
+			$('#tempf').remove();
+			$('#tabsfscores-100').remove();
+		});
+
+	});
+	</script>
+	<script>
+		function fetch_child_data(j){
+			$('div#params'+j).empty();
+			$('div#result'+j).empty();
+			$.getJSON("data/params.json", function(json) {
+
+				$('div#params'+j).append(document.createTextNode('colsample_bytree: ' + json['params'][j]['colsample_bytree']));
+				$('div#params'+j).append('<br>');
+				$('div#params'+j).append(document.createTextNode('gamma: ' + json['params'][j]['gamma']));
+				$('div#params'+j).append('<br>');
+				$('div#params'+j).append(document.createTextNode('max_depth: ' + json['params'][j]['max_depth']));
+				$('div#params'+j).append('<br>');
+			});
+
+
+			var file = "data/result"+j+".csv";
+			$.ajax({
+					type: "GET",
+					url: file,
+					success: function (data) {
+						$('div#result'+j).append(arrayToTable(Papa.parse(data).data, 'result'+j+'csv'));
+					}
+			});
+		};
+
+		function erase_params(i){
+			var exec = require('child_process').exec;
+		  child = exec("python erase_params.py "+i);
+		};
+		</script>
+		<script>
+		function get_array(input, x, y){
+			var result = {"X":[], "Y":[]};
+			var i;
+			for (i=0; i<input.length; i++){
+				if (!(x=='year' && input[i][x]==0)){
+					result["X"].push(input[i][x]);
+					result["Y"].push(input[i][y]);
+				}
+			};
+			return result;
+		}
+
+		function get_array_hist(input, y, x){
+			var result = {"X":[]};
+			var i;
+			for (i=0; i<input.length; i++){
+				if (input[i][y]==1){
+					result["X"].push(input[i][x]);
+				}
+			};
+			return result;
+		}
+		</script>
+		<script>
+		function fetch_fscores_data(i){
+			var file = "data/fscores"+i+".csv";
+			$.ajax({
+					type: "GET",
+					url: file,
+					success: function (data) {
+						$('div#fscores'+i).append(arrayToTable(Papa.parse(data).data, 'fscores'+i+'csv'));
+
+						var jsonobject = csvJSON(data);
+						var lineDiv = document.getElementById('fscores'+i+'_graph');
+
+						var result = get_array(jsonobject, "X", "Y");
+
+						var traceA = {
+						  x: result['X'],
+						  y: result['Y'],
+						  type: 'bar'
+						};
+
+						var data = [traceA];
+						var title = 'Fscores '+i;
+						var layout = {
+						  title: title,
+							xaxis: {
+						    automargin: true
+						  },
+							yaxis: {
+						    title: 'Feature Importance'
+						  }
+						};
+
+						Plotly.plot( lineDiv, data, layout );
+
+					}
+			});
+		};
+
+		function fetch_final_fscores_data(){
+			$.ajax({
+					type: "GET",
+					url: "data/final_fscores.csv",
+					success: function (data) {
+						$('div#fscoresf').append(arrayToTable(Papa.parse(data).data, 'fscoresfcsv'));
+
+						var jsonobject = csvJSON(data);
+						var lineDiv = document.getElementById('fscoresf_graph');
+
+						var result = get_array(jsonobject, "X", "Y");
+
+						var traceA = {
+							x: result['X'],
+							y: result['Y'],
+							type: 'bar'
+						};
+
+						var data = [traceA];
+						var title = 'Final Fscores';
+						var layout = {
+							title: title,
+							xaxis: {
+								automargin: true
+							},
+							yaxis: {
+						    title: 'Feature Importance'
+						  }
+						};
+
+						Plotly.plot( lineDiv, data, layout );
+					}
+			});
+		};
+		function csvJSON(csv){
+
+		  var lines=csv.split("\n");
+
+		  var result = [];
+
+		  var headers=lines[0].split(",");
+
+		  for(var i=1;i<lines.length;i++){
+
+			  var obj = {};
+			  var currentline=lines[i].split(",");
+
+			  for(var j=0;j<headers.length;j++){
+				  obj[headers[j]] = currentline[j];
+			  }
+
+			  result.push(obj);
+
+		  }
+
+		  return result;
+		};
+	</script>
+</head>
+
+<body>
+	<div id="tabs">
+	  <ul>
+	    <li><a href="#tabs-1">Predict</a></li>
+	    <li><a href="#tabs-2">Bash Output</a></li>
+			<li><a href="#tabs-4">Results & Parameters</a></li>
+			<li><a href="#tabs-5">Fscores</a></li>
+			<li><a href="#tabs-6">Graphs</a></li>
+			<li><a href="#tabs-7">Other</a></li>
+	  </ul>
+
+	  <div id="tabs-1">
+			<div id="inputs">
+				Username: <input type="text" id="username"><br>
+				Rounds: <input type="text" id="rounds"><br>
+			</div>
+			<br>
+			<button type="button" id= 'start'>Start</button>
+	  </div>
+
+	  <div id="tabs-2">
+			<button type="button" id= 'top-2'><a href="#bottom-2">Go to Bottom</a></button><br>
+			<div>Bash Output
+				<div id='bash_out'></div>
+			</div><br>
+			<button type="button" id= 'bottom-2'><a href="#tabs">Go to Top</a></button>
+	  </div>
+
+		<div id="tabs-4">
+			<button type="button" id= 'resparam_button'>Load Tabs</button>
+			<div id='resparam_div'>
+				<div id='tabsresparam'>
+					<ul>
+						<li><a href="#tabsresparam-final">Final Result</a></li>
+					</ul>
+					<div id='tabsresparam-final'>
+						<button type="button" id= 'result_button'>Display Result</button>
+						<button type="button" id= 'top-4'><a href="#bottom-4">Go to Bottom</a></button><br>
+						<div id='result_div'></div>
+						<button type="button" id= 'bottom-4'><a href="#tabs">Go to Top</a></button>
+					</div>
+				</div>
+			</div>
+	  </div>
+
+		<div id="tabs-5">
+			<button type="button" id= 'fscores_button'>Load Tabs</button>
+			<div id='fscores_div'>
+				<div id='tabsfscores'>
+					<ul>
+						<li><a href='#tabsfscoresf'>Final fscores</a></li>
+					</ul>
+					<div id='tabsfscoresf'>
+						<button type="button" id="fscores_data_button" onclick="fetch_final_fscores_data()">Load Final fscores</button>
+						<br>
+						<button type="button" id= "top-5-f"><a href="#bottom-5-f">Go to Bottom</a></button>
+						<div id="fscoresf_graph" style="width:700px;height:350px;"></div>
+						<div id="fscoresf"></div>
+						<button type="button" id= "bottom-5-f"><a href="#tabs">Go to Top</a></button>
+					</div>
+				</div>
+			</div>
+	  </div>
+
+		<div id="tabs-6">
+			<div id="tabsgraph">
+			  <ul>
+			    <li><a href="#tabsgraph-1">General</a></li>
+			    <li><a href="#tabsgraph-2">Computed</a></li>
+					<li><a href="#tabsgraph-3">Stats Graph</a></li>
+					<li><a href="#tabsgraph-4">Type</a></li>
+					<li><a href="#tabsgraph-5">Source</a></li>
+					<li><a href="#tabsgraph-6">Genre</a></li>
+					<li><a href="#tabsgraph-7">Studio</a></li>
+			  </ul>
+
+				<div id="tabsgraph-1">
+					<div id="tabsgraph_general">
+						<ul>
+							<li><a href="#tabsgraph_general-1">Comparison</a></li>
+							<li><a href="#tabsgraph_general-2">Original</a></li>
+							<li><a href="#tabsgraph_general-3">Prediction</a></li>
+						</ul>
+
+						<div id="tabsgraph_general-1">
+							<button type="button" id= 'graph_general_button'>Display Graphs</button>
+							<button type="button" id= 'top_general-6'><a href="#bottom_general-6">Go to Bottom</a></button><br>
+							<div id='graph_general'>
+								<div id="graph_mean" style="width:600px;height:350px;"></div>
+								<div id="graph_rank" style="width:600px;height:350px;"></div>
+								<div id="graph_popularity" style="width:600px;height:350px;"></div>
+								<div id="graph_members" style="width:600px;height:350px;"></div>
+								<div id="graph_year" style="width:600px;height:350px;"></div>
+								<div id="graph_fav" style="width:600px;height:350px;"></div>
+								<div id="graph_ep" style="width:600px;height:350px;"></div>
+							</div>
+							<button type="button" id= 'bottom_general-6'><a href="#tabs">Go to Top</a></button>
+						</div>
+
+						<div id="tabsgraph_general-2">
+							<button type="button" id= 'graph_general_ori_button'>Display Graphs</button>
+							<button type="button" id= 'top_general_ori-6'><a href="#bottom_general_ori-6">Go to Bottom</a></button><br>
+							<div id='graph_general_ori'>
+								<div id="graph_ori_mean" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_rank" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_popularity" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_members" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_year" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_fav" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_ep" style="width:600px;height:350px;"></div>
+							</div>
+							<button type="button" id= 'bottom_general_ori-6'><a href="#tabs">Go to Top</a></button>
+						</div>
+
+						<div id="tabsgraph_general-3">
+							<button type="button" id= 'graph_general_pre_button'>Display Graphs</button>
+							<button type="button" id= 'top_general_pre-6'><a href="#bottom_general_pre-6">Go to Bottom</a></button><br>
+							<div id='graph_general_pre'>
+								<div id="graph_pre_mean" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_rank" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_popularity" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_members" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_year" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_fav" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_ep" style="width:600px;height:350px;"></div>
+							</div>
+							<button type="button" id= 'bottom_general_pre-6'><a href="#tabs">Go to Top</a></button>
+						</div>
+					</div>
+				</div>
+
+				<div id="tabsgraph-2">
+					<div id="tabsgraph_computed">
+						<ul>
+							<li><a href="#tabsgraph_computed-1">Comparison</a></li>
+							<li><a href="#tabsgraph_computed-2">Original</a></li>
+							<li><a href="#tabsgraph_computed-3">Prediction</a></li>
+						</ul>
+
+						<div id="tabsgraph_computed-1">
+							<button type="button" id= 'graph_computed_button'>Display Graphs</button>
+							<button type="button" id= 'top_computed-6'><a href="#bottom_computed-6">Go to Bottom</a></button><br>
+							<div id='graph_computed'>
+								<div id="graph_fav/members" style="width:600px;height:350px;"></div>
+								<div id="graph_rank/pop" style="width:600px;height:350px;"></div>
+								<div id="graph_comp/members" style="width:600px;height:350px;"></div>
+								<div id="graph_dropped/members" style="width:600px;height:350px;"></div>
+							</div>
+							<button type="button" id= 'bottom_computed-6'><a href="#tabs">Go to Top</a></button>
+						</div>
+
+						<div id="tabsgraph_computed-2">
+							<button type="button" id= 'graph_computed_ori_button'>Display Graphs</button>
+							<button type="button" id= 'top_computed_ori-6'><a href="#bottom_computed_ori-6">Go to Bottom</a></button><br>
+							<div id='graph_computed_ori'>
+								<div id="graph_ori_fav/members" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_rank/pop" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_comp/members" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_dropped/members" style="width:600px;height:350px;"></div>
+							</div>
+							<button type="button" id= 'bottom_computed_ori-6'><a href="#tabs">Go to Top</a></button>
+						</div>
+
+						<div id="tabsgraph_computed-3">
+							<button type="button" id= 'graph_computed_pre_button'>Display Graphs</button>
+							<button type="button" id= 'top_computed_pre-6'><a href="#bottom_computed_pre-6">Go to Bottom</a></button><br>
+							<div id='graph_computed_pre'>
+								<div id="graph_pre_fav/members" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_rank/pop" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_comp/members" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_dropped/members" style="width:600px;height:350px;"></div>
+							</div>
+							<button type="button" id= 'bottom_computed_pre-6'><a href="#tabs">Go to Top</a></button>
+						</div>
+					</div>
+				</div>
+
+				<div id="tabsgraph-3">
+					<div id="tabsgraph_stats">
+						<ul>
+							<li><a href="#tabsgraph_stats-1">Comparison</a></li>
+							<li><a href="#tabsgraph_stats-2">Original</a></li>
+							<li><a href="#tabsgraph_stats-3">Prediction</a></li>
+						</ul>
+
+						<div id="tabsgraph_stats-1">
+							<button type="button" id= 'graph_stats_button'>Display Graphs</button>
+							<button type="button" id= 'top_stats-6'><a href="#bottom_stats-6">Go to Bottom</a></button><br>
+							<div id='graph_stats'>
+								<div id="graph_percent10" style="width:600px;height:350px;"></div>
+								<div id="graph_percent9" style="width:600px;height:350px;"></div>
+								<div id="graph_percent8" style="width:600px;height:350px;"></div>
+								<div id="graph_percent7" style="width:600px;height:350px;"></div>
+								<div id="graph_percent6" style="width:600px;height:350px;"></div>
+								<div id="graph_percent5" style="width:600px;height:350px;"></div>
+								<div id="graph_percent4" style="width:600px;height:350px;"></div>
+								<div id="graph_percent3" style="width:600px;height:350px;"></div>
+								<div id="graph_percent2" style="width:600px;height:350px;"></div>
+								<div id="graph_percent1" style="width:600px;height:350px;"></div>
+							</div>
+							<button type="button" id= 'bottom_stats-6'><a href="#tabs">Go to Top</a></button>
+						</div>
+
+						<div id="tabsgraph_stats-2">
+							<button type="button" id= 'graph_stats_ori_button'>Display Graphs</button>
+							<button type="button" id= 'top_stats_ori-6'><a href="#bottom_stats_ori-6">Go to Bottom</a></button><br>
+							<div id='graph_stats_ori'>
+								<div id="graph_ori_percent10" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_percent9" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_percent8" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_percent7" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_percent6" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_percent5" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_percent4" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_percent3" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_percent2" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_percent1" style="width:600px;height:350px;"></div>
+							</div>
+							<button type="button" id= 'bottom_stats_ori-6'><a href="#tabs">Go to Top</a></button>
+						</div>
+
+						<div id="tabsgraph_stats-3">
+							<button type="button" id= 'graph_stats_pre_button'>Display Graphs</button>
+							<button type="button" id= 'top_stats_pre-6'><a href="#bottom_stats_pre-6">Go to Bottom</a></button><br>
+							<div id='graph_stats_pre'>
+								<div id="graph_pre_percent10" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_percent9" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_percent8" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_percent7" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_percent6" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_percent5" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_percent4" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_percent3" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_percent2" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_percent1" style="width:600px;height:350px;"></div>
+							</div>
+							<button type="button" id= 'bottom_stats_pre-6'><a href="#tabs">Go to Top</a></button>
+						</div>
+					</div>
+				</div>
+
+				<div id="tabsgraph-4">
+					<div id="tabsgraph_type">
+						<ul>
+							<li><a href="#tabsgraph_type-1">Comparison</a></li>
+							<li><a href="#tabsgraph_type-2">Original</a></li>
+							<li><a href="#tabsgraph_type-3">Prediction</a></li>
+						</ul>
+
+						<div id="tabsgraph_type-1">
+							<button type="button" id= 'graph_type_button'>Display Graphs</button>
+							<button type="button" id= 'top_type-6'><a href="#bottom_type-6">Go to Bottom</a></button><br>
+							<div id='graph_type'>
+								<div id="graph_tv" style="width:600px;height:350px;"></div>
+								<div id="graph_movie" style="width:600px;height:350px;"></div>
+								<div id="graph_ova" style="width:600px;height:350px;"></div>
+								<div id="graph_special" style="width:600px;height:350px;"></div>
+								<div id="graph_ona" style="width:600px;height:350px;"></div>
+								<div id="graph_music_type" style="width:600px;height:350px;"></div>
+							</div>
+							<button type="button" id= 'bottom_type-6'><a href="#tabs">Go to Top</a></button>
+						</div>
+
+						<div id="tabsgraph_type-2">
+							<button type="button" id= 'graph_type_ori_button'>Display Graphs</button>
+							<button type="button" id= 'top_type_ori-6'><a href="#bottom_type_ori-6">Go to Bottom</a></button><br>
+							<div id='graph_type_ori'>
+								<div id="graph_ori_tv" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_movie" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_ova" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_special" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_ona" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_music_type" style="width:600px;height:350px;"></div>
+							</div>
+							<button type="button" id= 'bottom_type_ori-6'><a href="#tabs">Go to Top</a></button>
+						</div>
+
+						<div id="tabsgraph_type-3">
+							<button type="button" id= 'graph_type_pre_button'>Display Graphs</button>
+							<button type="button" id= 'top_type_pre-6'><a href="#bottom_type_pre-6">Go to Bottom</a></button><br>
+							<div id='graph_type_pre'>
+								<div id="graph_pre_tv" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_movie" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_ova" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_special" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_ona" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_music_type" style="width:600px;height:350px;"></div>
+							</div>
+							<button type="button" id= 'bottom_type_pre-6'><a href="#tabs">Go to Top</a></button>
+						</div>
+					</div>
+				</div>
+
+				<div id="tabsgraph-5">
+					<div id="tabsgraph_source">
+						<ul>
+							<li><a href="#tabsgraph_source-1">Comparison</a></li>
+							<li><a href="#tabsgraph_source-2">Original</a></li>
+							<li><a href="#tabsgraph_source-3">Prediction</a></li>
+						</ul>
+
+						<div id="tabsgraph_source-1">
+							<button type="button" id= 'graph_source_button'>Display Graphs</button>
+							<button type="button" id= 'top_source-6'><a href="#bottom_source-6">Go to Bottom</a></button><br>
+							<div id='graph_source'>
+								<div id="graph_manga" style="width:600px;height:350px;"></div>
+								<div id="graph_novel" style="width:600px;height:350px;"></div>
+								<div id="graph_original" style="width:600px;height:350px;"></div>
+								<div id="graph_lightnovel" style="width:600px;height:350px;"></div>
+								<div id="graph_visualnovel" style="width:600px;height:350px;"></div>
+								<div id="graph_game" style="width:600px;height:350px;"></div>
+								<div id="graph_other_source" style="width:600px;height:350px;"></div>
+							</div>
+							<button type="button" id= 'bottom_source-6'><a href="#tabs">Go to Top</a></button>
+						</div>
+
+						<div id="tabsgraph_source-2">
+							<button type="button" id= 'graph_source_ori_button'>Display Graphs</button>
+							<button type="button" id= 'top_source_ori-6'><a href="#bottom_source_ori-6">Go to Bottom</a></button><br>
+							<div id='graph_source_ori'>
+								<div id="graph_ori_manga" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_novel" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_original" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_lightnovel" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_visualnovel" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_game" style="width:600px;height:350px;"></div>
+								<div id="graph_ori_other_source" style="width:600px;height:350px;"></div>
+							</div>
+							<button type="button" id= 'bottom_source_ori-6'><a href="#tabs">Go to Top</a></button>
+						</div>
+
+						<div id="tabsgraph_source-3">
+							<button type="button" id= 'graph_source_pre_button'>Display Graphs</button>
+							<button type="button" id= 'top_source_pre-6'><a href="#bottom_source_pre-6">Go to Bottom</a></button><br>
+							<div id='graph_source_pre'>
+								<div id="graph_pre_manga" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_novel" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_original" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_lightnovel" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_visualnovel" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_game" style="width:600px;height:350px;"></div>
+								<div id="graph_pre_other_source" style="width:600px;height:350px;"></div>
+							</div>
+							<button type="button" id= 'bottom_source_pre-6'><a href="#tabs">Go to Top</a></button>
+						</div>
+					</div>
+				</div>
+
+				<div id="tabsgraph-6">Will be added in next update</div>
+				<div id="tabsgraph-7">Will be added in next update</div>
+
+
+			</div>
+
+
+
+	  </div>
+
+		<div id="tabs-7">
+			<button type="button" id= 'erase_df'>Erase Data</button>
+			<button type="button" id= 'restore_df'>Undo Erase</button>
+			<button type="button" id= 'restore_params'>Restore Erased Parameter</button>
+	  </div>
+	</div>
+
+
+	<script>
+	var exec = require('child_process').exec;
+	$("#restore_df").click(function(){
+		child = exec("python restore_csv.py");
+		$("#restore_df").html('Finished Restoring Data');
+	});
+	</script>
+	<script>
+	var exec = require('child_process').exec;
+	$("#restore_params").click(function(){
+		child = exec("python restore_json.py");
+		$("#restore_params").html('Finished Restoring Parameters');
+	});
+	</script>
+
+	<script>
+  $('#graph_general_button').click(function(){
+		$('#graph_general_button').html('Loading Graphs…');
+		$.ajax({
+				type: "GET",
+				url: "data/train_graph.csv",
+				success: function (data) {
+					graph_csv(data, 'graph_mean', "mean", "score", 'Mal Mean vs. Your Score');
+					graph_csv(data, 'graph_rank', "rank", "score", 'Mal Rank vs. Your Score');
+					graph_csv(data, 'graph_popularity', "popularity", "score", 'Mal Popularity vs. Your Score');
+					graph_csv(data, 'graph_members', "members", "score", 'Mal Members vs. Your Score');
+					graph_csv(data, 'graph_year', "year", "score", 'Year vs. Your Score');
+					graph_csv(data, 'graph_fav', "fav", "score", 'Mal Favorites vs. Your Score');
+					graph_csv(data, 'graph_ep', "ep", "score", 'Episode No. vs. Your Score');
+				}
+		}).done(function(){
+			$.ajax({
+					type: "GET",
+					url: "data/test_graph.csv",
+					success: function (data) {
+						graph_csv(data, 'graph_mean', "mean", "score", 'Mal Mean vs. Your Score');
+						graph_csv(data, 'graph_rank', "rank", "score", 'Mal Rank vs. Your Score');
+						graph_csv(data, 'graph_popularity', "popularity", "score", 'Mal Popularity vs. Your Score');
+						graph_csv(data, 'graph_members', "members", "score", 'Mal Members vs. Your Score');
+						graph_csv(data, 'graph_year', "year", "score", 'Year vs. Your Score');
+						graph_csv(data, 'graph_fav', "fav", "score", 'Mal Favorites vs. Your Score');
+						graph_csv(data, 'graph_ep', "ep", "score", 'Episode No. vs. Your Score');
+					}
+			}).done(function(){
+				$('#graph_general_button').html('Display Graphs')
+			});
+		});
+	});
+
+	$('#graph_general_ori_button').click(function(){
+		$('#graph_general_ori_button').html('Loading Graphs…');
+		$.ajax({
+				type: "GET",
+				url: "data/train_graph.csv",
+				success: function (data) {
+					graph_csv(data, 'graph_ori_mean', "mean", "score", 'Mal Mean vs. Your Score');
+					graph_csv(data, 'graph_ori_rank', "rank", "score", 'Mal Rank vs. Your Score');
+					graph_csv(data, 'graph_ori_popularity', "popularity", "score", 'Mal Popularity vs. Your Score');
+					graph_csv(data, 'graph_ori_members', "members", "score", 'Mal Members vs. Your Score');
+					graph_csv(data, 'graph_ori_year', "year", "score", 'Year vs. Your Score');
+					graph_csv(data, 'graph_ori_fav', "fav", "score", 'Mal Favorites vs. Your Score');
+					graph_csv(data, 'graph_ori_ep', "ep", "score", 'Episode No. vs. Your Score');
+				}
+		}).done(function(){
+				$('#graph_general_ori_button').html('Display Graphs');
+		});
+	});
+
+	$('#graph_general_pre_button').click(function(){
+		$('#graph_general_pre_button').html('Loading Graphs…');
+		$.ajax({
+				type: "GET",
+				url: "data/test_graph.csv",
+				success: function (data) {
+					graph_csv(data, 'graph_pre_mean', "mean", "score", 'Mal Mean vs. Prediction');
+					graph_csv(data, 'graph_pre_rank', "rank", "score", 'Mal Rank vs. Prediction');
+					graph_csv(data, 'graph_pre_popularity', "popularity", "score", 'Mal Popularity vs. Prediction');
+					graph_csv(data, 'graph_pre_members', "members", "score", 'Mal Members vs. Prediction');
+					graph_csv(data, 'graph_pre_year', "year", "score", 'Year vs. Prediction');
+					graph_csv(data, 'graph_pre_fav', "fav", "score", 'Mal Favorites vs. Prediction');
+					graph_csv(data, 'graph_pre_ep', "ep", "score", 'Episode No. vs. Prediction');
+				}
+		}).done(function(){
+				$('#graph_general_ori_button').html('Display Graphs');
+		});
+	});
+	</script>
+
+	<script>
+	$('#graph_stats_button').click(function(){
+		$('#graph_stats_button').html('Loading Graphs…');
+		$.ajax({
+				type: "GET",
+				url: "data/train_graph.csv",
+				success: function (data) {
+					graph_csv(data, 'graph_percent10', "percent10", "score", 'Percentage of Score 10 vs. Your Score');
+					graph_csv(data, 'graph_percent9', "percent9", "score", 'Percentage of Score 9 vs. Your Score');
+					graph_csv(data, 'graph_percent8', "percent8", "score", 'Percentage of Score 8 vs. Your Score');
+					graph_csv(data, 'graph_percent7', "percent7", "score", 'Percentage of Score 7 vs. Your Score');
+					graph_csv(data, 'graph_percent6', "percent6", "score", 'Percentage of Score 6 vs. Your Score');
+					graph_csv(data, 'graph_percent5', "percent5", "score", 'Percentage of Score 5 vs. Your Score');
+					graph_csv(data, 'graph_percent4', "percent4", "score", 'Percentage of Score 4 vs. Your Score');
+					graph_csv(data, 'graph_percent3', "percent3", "score", 'Percentage of Score 3 vs. Your Score');
+					graph_csv(data, 'graph_percent2', "percent2", "score", 'Percentage of Score 2 vs. Your Score');
+					graph_csv(data, 'graph_percent1', "percent1", "score", 'Percentage of Score 1 vs. Your Score');
+				}
+		}).done(function(){
+			$.ajax({
+					type: "GET",
+					url: "data/test_graph.csv",
+					success: function (data) {
+						graph_csv(data, 'graph_percent10', "percent10", "score", 'Percentage of Score 10 vs. Your Score');
+						graph_csv(data, 'graph_percent9', "percent9", "score", 'Percentage of Score 9 vs. Your Score');
+						graph_csv(data, 'graph_percent8', "percent8", "score", 'Percentage of Score 8 vs. Your Score');
+						graph_csv(data, 'graph_percent7', "percent7", "score", 'Percentage of Score 7 vs. Your Score');
+						graph_csv(data, 'graph_percent6', "percent6", "score", 'Percentage of Score 6 vs. Your Score');
+						graph_csv(data, 'graph_percent5', "percent5", "score", 'Percentage of Score 5 vs. Your Score');
+						graph_csv(data, 'graph_percent4', "percent4", "score", 'Percentage of Score 4 vs. Your Score');
+						graph_csv(data, 'graph_percent3', "percent3", "score", 'Percentage of Score 3 vs. Your Score');
+						graph_csv(data, 'graph_percent2', "percent2", "score", 'Percentage of Score 2 vs. Your Score');
+						graph_csv(data, 'graph_percent1', "percent1", "score", 'Percentage of Score 1 vs. Your Score');
+					}
+			}).done(function(){
+					$('#graph_stats_button').html('Display Graphs');
+			});
+		});
+	});
+
+	$('#graph_stats_ori_button').click(function(){
+		$('#graph_stats_ori_button').html('Loading Graphs…');
+		$.ajax({
+				type: "GET",
+				url: "data/train_graph.csv",
+				success: function (data) {
+					graph_csv(data, 'graph_ori_percent10', "percent10", "score", 'Percentage of Score 10 vs. Your Score');
+					graph_csv(data, 'graph_ori_percent9', "percent9", "score", 'Percentage of Score 9 vs. Your Score');
+					graph_csv(data, 'graph_ori_percent8', "percent8", "score", 'Percentage of Score 8 vs. Your Score');
+					graph_csv(data, 'graph_ori_percent7', "percent7", "score", 'Percentage of Score 7 vs. Your Score');
+					graph_csv(data, 'graph_ori_percent6', "percent6", "score", 'Percentage of Score 6 vs. Your Score');
+					graph_csv(data, 'graph_ori_percent5', "percent5", "score", 'Percentage of Score 5 vs. Your Score');
+					graph_csv(data, 'graph_ori_percent4', "percent4", "score", 'Percentage of Score 4 vs. Your Score');
+					graph_csv(data, 'graph_ori_percent3', "percent3", "score", 'Percentage of Score 3 vs. Your Score');
+					graph_csv(data, 'graph_ori_percent2', "percent2", "score", 'Percentage of Score 2 vs. Your Score');
+					graph_csv(data, 'graph_ori_percent1', "percent1", "score", 'Percentage of Score 1 vs. Your Score');
+				}
+		}).done(function(){
+				$('#graph_stats_ori_button').html('Display Graphs');
+		});
+	});
+
+	$('#graph_stats_pre_button').click(function(){
+		$('#graph_stats_pre_button').html('Loading Graphs…');
+		$.ajax({
+				type: "GET",
+				url: "data/test_graph.csv",
+				success: function (data) {
+					graph_csv(data, 'graph_pre_percent10', "percent10", "score", 'Percentage of Score 10 vs. Prediction');
+					graph_csv(data, 'graph_pre_percent9', "percent9", "score", 'Percentage of Score 9 vs. Prediction');
+					graph_csv(data, 'graph_pre_percent8', "percent8", "score", 'Percentage of Score 8 vs. Prediction');
+					graph_csv(data, 'graph_pre_percent7', "percent7", "score", 'Percentage of Score 7 vs. Prediction');
+					graph_csv(data, 'graph_pre_percent6', "percent6", "score", 'Percentage of Score 6 vs. Prediction');
+					graph_csv(data, 'graph_pre_percent5', "percent5", "score", 'Percentage of Score 5 vs. Prediction');
+					graph_csv(data, 'graph_pre_percent4', "percent4", "score", 'Percentage of Score 4 vs. Prediction');
+					graph_csv(data, 'graph_pre_percent3', "percent3", "score", 'Percentage of Score 3 vs. Prediction');
+					graph_csv(data, 'graph_pre_percent2', "percent2", "score", 'Percentage of Score 2 vs. Prediction');
+					graph_csv(data, 'graph_pre_percent1', "percent1", "score", 'Percentage of Score 1 vs. Prediction');
+				}
+		}).done(function(){
+				$('#graph_stats_pre_button').html('Display Graphs');
+		});
+	});
+	</script>
+
+	<script>
+	$('#graph_computed_button').click(function(){
+		$('#graph_computed_button').html('Loading Graphs…');
+		$.ajax({
+				type: "GET",
+				url: "data/train_graph.csv",
+				success: function (data) {
+					graph_csv(data, 'graph_fav/members', "fav/members", "score", 'Favorites/Members vs. Your Score');
+					graph_csv(data, 'graph_rank/pop', "rank/pop", "score", 'Rank/Popularity vs. Your Score');
+					graph_csv(data, 'graph_comp/members', "comp/members", "score", 'Completed/Members vs. Your Score');
+					graph_csv(data, 'graph_dropped/members', "dropped/members", "score", 'Dropped/Members vs. Your Score');
+				}
+		}).done(function(){
+			$.ajax({
+					type: "GET",
+					url: "data/test_graph.csv",
+					success: function (data) {
+						graph_csv(data, 'graph_fav/members', "fav/members", "score", 'Favorites/Members vs. Your Score');
+						graph_csv(data, 'graph_rank/pop', "rank/pop", "score", 'Rank/Popularity vs. Your Score');
+						graph_csv(data, 'graph_comp/members', "comp/members", "score", 'Completed/Members vs. Your Score');
+						graph_csv(data, 'graph_dropped/members', "dropped/members", "score", 'Dropped/Members vs. Your Score');
+					}
+			}).done(function(){
+					$('#graph_computed_button').html('Display Graphs');
+			});
+		});
+	});
+
+	$('#graph_computed_ori_button').click(function(){
+		$('#graph_computed_ori_button').html('Loading Graphs…');
+		$.ajax({
+				type: "GET",
+				url: "data/train_graph.csv",
+				success: function (data) {
+					graph_csv(data, 'graph_ori_fav/members', "fav/members", "score", 'Favorites/Members vs. Your Score');
+					graph_csv(data, 'graph_ori_rank/pop', "rank/pop", "score", 'Rank/Popularity vs. Your Score');
+					graph_csv(data, 'graph_ori_comp/members', "comp/members", "score", 'Completed/Members vs. Your Score');
+					graph_csv(data, 'graph_ori_dropped/members', "dropped/members", "score", 'Dropped/Members vs. Your Score');
+				}
+		}).done(function(){
+				$('#graph_computed_ori_button').html('Display Graphs');
+		});
+	});
+
+	$('#graph_computed_pre_button').click(function(){
+		$('#graph_computed_pre_button').html('Loading Graphs…');
+		$.ajax({
+				type: "GET",
+				url: "data/test_graph.csv",
+				success: function (data) {
+					graph_csv(data, 'graph_pre_fav/members', "fav/members", "score", 'Favorites/Members vs. Your Score');
+					graph_csv(data, 'graph_pre_rank/pop', "rank/pop", "score", 'Rank/Popularity vs. Your Score');
+					graph_csv(data, 'graph_pre_comp/members', "comp/members", "score", 'Completed/Members vs. Your Score');
+					graph_csv(data, 'graph_pre_dropped/members', "dropped/members", "score", 'Dropped/Members vs. Your Score');
+				}
+		}).done(function(){
+				$('#graph_computed_pre_button').html('Display Graphs');
+		});
+	});
+	</script>
+
+	<script>
+	$('#graph_type_button').click(function(){
+		$('#graph_type_button').html('Loading Graphs…');
+		$.ajax({
+				type: "GET",
+				url: "data/train_graph.csv",
+				success: function (data) {
+					graph_hist(data, 'graph_tv', "TV", "score", 'Your Score Distribution for TV');
+					graph_hist(data, 'graph_movie', "Movie", "score", 'Your Score Distribution for Movie');
+					graph_hist(data, 'graph_ova', "OVA", "score", 'Your Score Distribution for OVA');
+					graph_hist(data, 'graph_special', "Special", "score", 'Your Score Distribution for Special');
+					graph_hist(data, 'graph_ona', "ONA", "score", 'Your Score Distribution for ONA');
+					graph_hist(data, 'graph_music_type', "Music_type", "score", 'Your Score Distribution for Music');
+				}
+		}).done(function(){
+			$.ajax({
+					type: "GET",
+					url: "data/test_graph.csv",
+					success: function (data) {
+						graph_hist(data, 'graph_tv', "TV", "score", 'Your Score Distribution for TV');
+						graph_hist(data, 'graph_movie', "Movie", "score", 'Your Score Distribution for Movie');
+						graph_hist(data, 'graph_ova', "OVA", "score", 'Your Score Distribution for OVA');
+						graph_hist(data, 'graph_special', "Special", "score", 'Your Score Distribution for Special');
+						graph_hist(data, 'graph_ona', "ONA", "score", 'Your Score Distribution for ONA');
+						graph_hist(data, 'graph_music_type', "Music_type", "score", 'Your Score Distribution for Music');
+					}
+			}).done(function(){
+					$('#graph_type_button').html('Display Graphs');
+			});
+		});
+	});
+
+	$('#graph_type_ori_button').click(function(){
+		$('#graph_type_ori_button').html('Loading Graphs…');
+		$.ajax({
+				type: "GET",
+				url: "data/train_graph.csv",
+				success: function (data) {
+					graph_hist(data, 'graph_ori_tv', "TV", "score", 'Your Score Distribution for TV');
+					graph_hist(data, 'graph_ori_movie', "Movie", "score", 'Your Score Distribution for Movie');
+					graph_hist(data, 'graph_ori_ova', "OVA", "score", 'Your Score Distribution for OVA');
+					graph_hist(data, 'graph_ori_special', "Special", "score", 'Your Score Distribution for Special');
+					graph_hist(data, 'graph_ori_ona', "ONA", "score", 'Your Score Distribution for ONA');
+					graph_hist(data, 'graph_ori_music_type', "Music_type", "score", 'Your Score Distribution for Music');
+				}
+		}).done(function(){
+				$('#graph_type_ori_button').html('Display Graphs');
+		});
+	});
+
+	$('#graph_type_pre_button').click(function(){
+		$('#graph_type_pre_button').html('Loading Graphs…');
+		$.ajax({
+				type: "GET",
+				url: "data/test_graph.csv",
+				success: function (data) {
+					graph_hist(data, 'graph_pre_tv', "TV", "score", 'Your Score Distribution for TV');
+					graph_hist(data, 'graph_pre_movie', "Movie", "score", 'Your Score Distribution for Movie');
+					graph_hist(data, 'graph_pre_ova', "OVA", "score", 'Your Score Distribution for OVA');
+					graph_hist(data, 'graph_pre_special', "Special", "score", 'Your Score Distribution for Special');
+					graph_hist(data, 'graph_pre_ona', "ONA", "score", 'Your Score Distribution for ONA');
+					graph_hist(data, 'graph_pre_music_type', "Music_type", "score", 'Your Score Distribution for Music');
+				}
+		}).done(function(){
+				$('#graph_type_pre_button').html('Display Graphs');
+		});
+	});
+	</script>
+
+	<script>
+	$('#graph_source_button').click(function(){
+		$('#graph_source_button').html('Loading Graphs…');
+		$.ajax({
+				type: "GET",
+				url: "data/train_graph.csv",
+				success: function (data) {
+					graph_hist(data, 'graph_manga', "Manga", "score", 'Your Score Distribution for Manga');
+					graph_hist(data, 'graph_novel', "Novel", "score", 'Your Score Distribution for Novel');
+					graph_hist(data, 'graph_original', "Original", "score", 'Your Score Distribution for Original');
+					graph_hist(data, 'graph_lightnovel', "Lightnovel", "score", 'Your Score Distribution for Lightnovel');
+					graph_hist(data, 'graph_visualnovel', "Visualnovel", "score", 'Your Score Distribution for Visualnovel');
+					graph_hist(data, 'graph_game', "Game", "score", 'Your Score Distribution for Game');
+					graph_hist(data, 'graph_other_source', "Other_source", "score", 'Your Score Distribution for Other Sources');
+				}
+		}).done(function(){
+			$.ajax({
+					type: "GET",
+					url: "data/test_graph.csv",
+					success: function (data) {
+						graph_hist(data, 'graph_manga', "Manga", "score", 'Your Score Distribution for Manga');
+						graph_hist(data, 'graph_novel', "Novel", "score", 'Your Score Distribution for Novel');
+						graph_hist(data, 'graph_original', "Original", "score", 'Your Score Distribution for Original');
+						graph_hist(data, 'graph_lightnovel', "Lightnovel", "score", 'Your Score Distribution for Lightnovel');
+						graph_hist(data, 'graph_visualnovel', "Visualnovel", "score", 'Your Score Distribution for Visualnovel');
+						graph_hist(data, 'graph_game', "Game", "score", 'Your Score Distribution for Game');
+						graph_hist(data, 'graph_other_source', "Other_source", "score", 'Your Score Distribution for Other Sources');
+					}
+			}).done(function(){
+					$('#graph_source_button').html('Display Graphs');
+			});
+		});
+	});
+
+	$('#graph_source_ori_button').click(function(){
+		$('#graph_source_ori_button').html('Loading Graphs…');
+		$.ajax({
+				type: "GET",
+				url: "data/train_graph.csv",
+				success: function (data) {
+					graph_hist(data, 'graph_ori_manga', "Manga", "score", 'Your Score Distribution for Manga');
+					graph_hist(data, 'graph_ori_novel', "Novel", "score", 'Your Score Distribution for Novel');
+					graph_hist(data, 'graph_ori_original', "Original", "score", 'Your Score Distribution for Original');
+					graph_hist(data, 'graph_ori_lightnovel', "Lightnovel", "score", 'Your Score Distribution for Lightnovel');
+					graph_hist(data, 'graph_ori_visualnovel', "Visualnovel", "score", 'Your Score Distribution for Visualnovel');
+					graph_hist(data, 'graph_ori_game', "Game", "score", 'Your Score Distribution for Game');
+					graph_hist(data, 'graph_ori_other_source', "Other_source", "score", 'Your Score Distribution for Other Sources');
+				}
+		}).done(function(){
+				$('#graph_source_ori_button').html('Display Graphs');
+		});
+	});
+
+	$('#graph_source_pre_button').click(function(){
+		$('#graph_source_pre_button').html('Loading Graphs…');
+		$.ajax({
+				type: "GET",
+				url: "data/test_graph.csv",
+				success: function (data) {
+					graph_hist(data, 'graph_pre_manga', "Manga", "score", 'Your Score Distribution for Manga');
+					graph_hist(data, 'graph_pre_novel', "Novel", "score", 'Your Score Distribution for Novel');
+					graph_hist(data, 'graph_pre_original', "Original", "score", 'Your Score Distribution for Original');
+					graph_hist(data, 'graph_pre_lightnovel', "Lightnovel", "score", 'Your Score Distribution for Lightnovel');
+					graph_hist(data, 'graph_pre_visualnovel', "Visualnovel", "score", 'Your Score Distribution for Visualnovel');
+					graph_hist(data, 'graph_pre_game', "Game", "score", 'Your Score Distribution for Game');
+					graph_hist(data, 'graph_pre_other_source', "Other_source", "score", 'Your Score Distribution for Other Sources');
+				}
+		}).done(function(){
+				$('#graph_source_pre_button').html('Display Graphs');
+		});
+	});
+  </script>
+
+	<script>
+	function graph_csv(data, div, x, y, title){
+		var jsonobject = csvJSON(data);
+		var lineDiv = document.getElementById(div);
+
+		var result = get_array(jsonobject, x, y);
+
+		//$('#graph_general').html(document.createTextNode(result['Y'][556]));
+
+		var traceA = {
+			x: result['X'],
+			y: result['Y'],
+			mode: "markers",
+			type: "scatter"
+		};
+
+		var data = [traceA];
+		var title = title;
+		var layout = {
+			title: title,
+			xaxis: {
+				title: x
+			},
+			yaxis: {
+				title: y,
+				range: [0,10]
+			}
+		};
+
+		Plotly.plot( lineDiv, data, layout );
+	};
+
+	function graph_hist(data, div, x, y, title){
+		var jsonobject = csvJSON(data);
+		var lineDiv = document.getElementById(div);
+
+		var result = get_array_hist(jsonobject, x, y);
+
+		//$('#graph_type').html(document.createTextNode(result['X']));
+
+		var traceA = {
+			x: result['X'],
+			type: "histogram",
+			xbins: {size: 1}
+		};
+
+		var data = [traceA];
+		var title = title;
+		var layout = {
+			title: title,
+			xaxis: {
+				title: y
+			}
+		};
+
+		Plotly.plot( lineDiv, data, layout );
+	};
+	</script>
+
+	<script>
+	var spawn = require('child_process').spawn;
+
+	$("#start").click(function(){
+		$("#start").html("Started. Do Not Terminate Program Until Bash Output Appears.");
+		$('#bash_out').empty();
+		let username = $('#username').val();
+		let rounds = $('#rounds').val();
+
+
+		var process = spawn('python',["main.py", username, rounds]);
+
+		process.stdout.on('data', (data) => {
+			$('#bash_out').append('<br>');
+			$('#bash_out').append(document.createTextNode(data));
+		});
+
+		process.stderr.on('data', (data) => {
+			$('#bash_out').append('<br>');
+			$('#bash_out').append(document.createTextNode(data));
+		});
+
+		process.on('close', (code) => {
+			//$('#bash_out').append('<br>');
+			//$('#bash_out').append(document.createTextNode(code));
+			$("#start").html("Done");
+		});
+		//var command = "python main.py " + username + " " + rounds
+    //child = exec(command);
+    //$("#start").html("Done");
+  });
+	</script>
+
+  <script>
+  var exec = require('child_process').exec;
+  $("#erase_df").click(function(){
+    child = exec("python df_creation.py");
+    $("#erase_df").html('Finished Erasing Data');
+  });
+  </script>
+
+
+
+  <script>
+  function arrayToTable(tableData, id) {
+      var table = $('<table id="'+id+'"></table>');
+      $(tableData).each(function (i, rowData) {
+          var row = $('<tr></tr>');
+          $(rowData).each(function (j, cellData) {
+              row.append($('<td>'+cellData+'</td>'));
+          });
+          table.append(row);
+      });
+      return table;
+  }
+
+  $('#result_button').click(function(){
+		if (document.getElementById('final_result') != null){
+			$('#final_result').remove();
+		}
+    $.ajax({
+        type: "GET",
+        url: "data/final_data_labled.csv",
+        success: function (data) {
+          $('#result_div').append(arrayToTable(Papa.parse(data).data, 'final_result'));
+        }
+    });
+  });
+  </script>
+
+</body>
+</html>

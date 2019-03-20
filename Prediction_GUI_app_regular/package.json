@@ -1,0 +1,17 @@
+{
+  "name": "malscoreprediction",
+  "version": "1.0.0",
+  "description": "app",
+  "main": "main.js",
+  "author": "MS",
+  "scripts": {
+    "start": "electron ."
+  },
+  "dependencies": {
+    "electron": "^4.0.7",
+    "jquery": "^3.3.1",
+    "tree-kill": "^1.2.1"
+  },
+  "devDependencies": {},
+  "license": "MIT"
+}
