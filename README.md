@@ -1,6 +1,7 @@
 # Mal_Score_Prediction_GUI_app
 
-Mal_Score_Prediction_GUI_app is a GUI interactive electron app that predicts scores of your unscored anime on your MyAnimeList list.
+Mal_Score_Prediction_GUI_app is a GUI interactive electron app that predicts scores of your unscored anime on your MyAnimeList list with clear graphs for each features.
+![alt text](https://i.imgur.com/MtefOPS.jpg)
 
 ## Installation
 You should either use git clone or direct zip download.
