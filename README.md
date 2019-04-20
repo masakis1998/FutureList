@@ -6,17 +6,15 @@ Mal_Score_Prediction_GUI_app is a GUI interactive electron app that predicts sco
 ## Program Overview
 ```text
 +-------------+  childprocess   +-----------------------+   html request   +-----------+
-| Javascript  | --------------\ |        Python         | ---------------> | Jikan API |
-| (GUI input) | --------------/ | (Run by bash command) | <--------------- |           |
+| Javascript  | --------------> |        Python         | ---------------> | Jikan API |
+|             |                 |   (Machine Learning)  | <--------------- |           |
 +-------------+                 +-----------------------+                  +-----------+
-                                           | |
-                                           | |
-                                          \   / 
-                                           \ /
-                                +-----------------------+
-                                |       
-                                | 
-                                +-----------------------+
+       ^                                    |
+       | User Input                         V
++-------------+                 +-----------------------+
+|    HTML     |      Ajax       |       CSV, JSON       |
+|             | <-------------- |    (Output files)     |
++-------------+                 +-----------------------+
                                 
 ```
 ## Installation
