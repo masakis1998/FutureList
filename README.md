@@ -20,7 +20,7 @@ Choose one depending on your preference.
 * lxml
 * tkinter, time, requests (should be already installed with python)
 
-To install those follow this:
+To install those, follow this:
 
 install Node.js (https://nodejs.org)
 
