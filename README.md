@@ -17,14 +17,11 @@ Mal_Score_Prediction_GUI_app is a GUI interactive electron app that predicts ani
 +-------------+                 +-----------------------+
                                 
 ```
-## Installation
-Use git clone or direct zip download.
-Extended version includes staffs that worked on anime. However, data fetching can be very time consuming.
-Regular version does not have staffs as features but data fetching is significantly shorter.
-Choose one depending on your preference.
-
-### Dependencies
+## Dependencies
 * Node.js
+* child_process
+* electron
+* jQuery, jQueryUI
 * Jikan.api (https://jikan.docs.apiary.io/)
 * python3
 * pandas
@@ -32,19 +29,23 @@ Choose one depending on your preference.
 * bayes_opt (BayesianOptimization)
 * sklearn
 * lxml
-* tkinter, time, requests (should be already installed with python)
+* tkinter, time, requests
 
-To install those, follow this:
+## Installation
+Use git clone or direct zip download.
+Extended version includes staffs that worked on anime. However, data fetching can be very time consuming.
+Regular version does not have staffs as features but data fetching is significantly shorter.
+Choose one depending on your preference.
+
+Followings are required packages:
 
 install Node.js (https://nodejs.org)
 
-`xcode-select --install` (only for mac users)
+install anaconda python: (https://docs.continuum.io/anaconda/install/)
 
-install anaconda python (https://docs.continuum.io/anaconda/install/)
+install xgboost: `pip install xgboost`
 
-`pip install xgboost` or `conda install -c conda-forge xgboost`
-
-`pip install bayesian-optimization`
+install bayesian-optimization: `pip install bayesian-optimization`
 
 ## Usage
 
