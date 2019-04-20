@@ -1,6 +1,6 @@
 # Mal_Score_Prediction_GUI_app
 
-Mal_Score_Prediction_GUI_app is a GUI interactive electron app that predicts scores of your unscored anime on your MyAnimeList list with clear graphs for each features.
+Mal_Score_Prediction_GUI_app is a GUI interactive electron app that predicts anime scores using machine learning model with clean graphs of features.
 ![alt text](https://i.imgur.com/MtefOPS.jpg)
 
 ## Program Overview
@@ -9,7 +9,7 @@ Mal_Score_Prediction_GUI_app is a GUI interactive electron app that predicts sco
 | Javascript  | --------------> |        Python         | ---------------> | Jikan API |
 |             |                 |   (Machine Learning)  | <--------------- |           |
 +-------------+                 +-----------------------+                  +-----------+
-       ^                                    |
+       ^                                    | Program Output
        | User Input                         V
 +-------------+                 +-----------------------+
 |    HTML     |      Ajax       |       CSV, JSON       |
