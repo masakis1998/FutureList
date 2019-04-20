@@ -51,7 +51,7 @@ install bayesian-optimization: `pip install bayesian-optimization`
 Open Terminal and set working directory to either Prediction_GUI_app_regular or Prediction_GUI_app_extended, whichever you prefer.
 Then Run `npm run start`.
 You should see following window.
-![alt text](https://i.imgur.com/Dk0yRdZ.jpg)
+![alt text](https://i.imgur.com/rKgSwxf.jpg)
 
 Type in your MyAnimeList username and number of rounds for score prediction.
 
