@@ -1,8 +1,6 @@
 # Mal_Score_Prediction_GUI_app
 
-Mal_Score_Prediction_GUI_app is an electron app that predicts scores of your unscored anime on your MyAnimeList list.
-
-This program uses the data fetched from Jikan API, and it is the vital part of the program.
+Mal_Score_Prediction_GUI_app is a GUI interactive electron app that predicts scores of your unscored anime on your MyAnimeList list.
 
 ## Installation
 You should either use git clone or direct zip download.
@@ -10,6 +8,7 @@ Both should work.
 
 ### Dependencies
 * Node.js
+* Jikan.api (https://jikan.docs.apiary.io/)
 * python3
 * pandas
 * xgboost
