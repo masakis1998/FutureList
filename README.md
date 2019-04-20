@@ -39,7 +39,7 @@ Choose one depending on your preference.
 
 Followings are required packages:
 
-install Node.js (https://nodejs.org)
+install Node.js: (https://nodejs.org)
 
 install anaconda python: (https://docs.continuum.io/anaconda/install/)
 
@@ -48,8 +48,6 @@ install xgboost: `pip install xgboost`
 install bayesian-optimization: `pip install bayesian-optimization`
 
 ## Usage
+Open Terminal and set working directory to either Prediction_GUI_app_regular or Prediction_GUI_app_extended, whichever you prefer.
 
-This is the application window.
-
-![alt text]()
 
