@@ -4,7 +4,7 @@ Mal_Score_Prediction_GUI_app is a GUI interactive electron app that predicts sco
 ![alt text](https://i.imgur.com/MtefOPS.jpg)
 
 ## Program Overview
-`+-------------+  childprocess   +-----------------------+   html request   +-----------+
++-------------+  childprocess   +-----------------------+   html request   +-----------+
 | Javascript  | --------------\ |        Python         | ---------------> | Jikan API |
 | (GUI input) | --------------/ | (Run by bash command) | <--------------- |           |
 +-------------+                 +-----------------------+                  +-----------+
@@ -14,8 +14,8 @@ Mal_Score_Prediction_GUI_app is a GUI interactive electron app that predicts sco
                                            \ /
                                 +-----------------------+
                                 |       
-                                |
-                                +-----------------------+`
+                                | 
+                                +-----------------------+
                                 
 ## Installation
 Use git clone or direct zip download.
