@@ -54,4 +54,17 @@ You should see following window.
 ![alt text](https://i.imgur.com/rKgSwxf.jpg)
 
 Type in your MyAnimeList username and number of rounds for score prediction.
+Press Start button.
+Wait till Bash Output appears.
 
+Then load tabs and display result on Results & Parameters tab.
+![alt text](https://i.imgur.com/1dZo6At.jpg)
+
+Feature importance graph can be displayed on Fscores tab.
+![alt text](https://i.imgur.com/P3RZs7u.jpg)
+
+Graphs for features can be displayed on Graphs tab.
+![alt text](https://i.imgur.com/MtefOPS.jpg)
+
+Data can be erased on Other tab.
+![alt text](https://i.imgur.com/SQpHJPr.jpg)
