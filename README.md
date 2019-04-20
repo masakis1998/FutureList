@@ -33,5 +33,5 @@ install anaconda python (https://docs.continuum.io/anaconda/install/)
 
 This is the application window.
 
-![alt text](https://i.imgur.com/MOKsPSQ.jpg)
+![alt text]()
 
