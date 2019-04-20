@@ -4,8 +4,10 @@ Mal_Score_Prediction_GUI_app is a GUI interactive electron app that predicts sco
 ![alt text](https://i.imgur.com/MtefOPS.jpg)
 
 ## Installation
-You should either use git clone or direct zip download.
-Both should work.
+Use git clone or direct zip download.
+Extended version includes staffs that worked on anime. However, data fetching can be very time consuming.
+Regular version does not have staffs as features but data fetching is significantly shorter.
+Choose one depending on your preference.
 
 ### Dependencies
 * Node.js
