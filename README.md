@@ -29,7 +29,6 @@ Mal_Score_Prediction_GUI_app is a GUI interactive electron app that predicts ani
 * bayes_opt (BayesianOptimization)
 * sklearn
 * lxml
-* tkinter, time, requests
 
 ## Installation
 Use git clone or direct zip download.
