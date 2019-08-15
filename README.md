@@ -47,7 +47,7 @@ install xgboost: `pip install xgboost`
 install bayesian-optimization: `pip install bayesian-optimization`
 
 ## Usage
-Open Terminal and set working directory to either Prediction_GUI_app_regular or Prediction_GUI_app_extended, whichever you prefer.
+Open Terminal and set working directory to either FutureList_regular or FutureList_extended, whichever you prefer.
 Then Run `npm run start`.
 You should see following window.
 ![alt text](https://i.imgur.com/rKgSwxf.jpg)
